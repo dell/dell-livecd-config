@@ -21,6 +21,7 @@ import_key() {
 }
 
 rm -rf $SCRIPT_DIR/livecd
+mkdir -p $SCRIPT_DIR/livecd
 
 perl -p -e "s|##SCRIPT_DIR##|$SCRIPT_DIR|g;" $SCRIPT_DIR/livecd-config.ks.in > $SCRIPT_DIR/livecd-config.ks
 
