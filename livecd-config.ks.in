@@ -19,7 +19,7 @@ repo --name=addons --baseurl=http://hb.us.dell.com/pub/Distros/centos/5.1/addons
 repo --name=extras --baseurl=http://hb.us.dell.com/pub/Distros/centos/5.1/extras/i386/
 repo --name=plus --baseurl=http://hb.us.dell.com/pub/Distros/centos/5.1/centosplus/i386/
 repo --name=fast --baseurl=http://hb.us.dell.com/pub/Distros/centos/5.1/fasttrack/i386/
-repo --name=local --baseurl=file://##SCRIPT_DIR##/repository/ 
+repo --name=local --baseurl=file://##SCRIPT_DIR##/repository/
 
 %packages
 @base-x
@@ -123,6 +123,7 @@ fi
 useradd -c "Centos Live" centos
 passwd -d centos > /dev/null
 
+
 # turn off firstboot for livecd boots
 chkconfig --level 345 firstboot off 2>/dev/null
 
@@ -206,6 +207,10 @@ fi
 
 EOF
 
+#disabling the selinux from the live-cd
+mv /etc/selinux/config /etc/selinux/config.bk
+cat /etc/selinux/config.bk | sed -e "s/SELINUX=enforcing/SELINUX=disabled/g" > /etc/selinux/config 
+
 # workaround avahi segfault (#279301)
 touch /etc/resolv.conf
 /sbin/restorecon /etc/resolv.conf
@@ -219,7 +224,7 @@ chmod 755 /etc/rc.d/init.d/centos-late-live
 /sbin/chkconfig --add centos-late-live
 
 # work around for poor key import UI in PackageKit
-rpm --import /etc/pki/rpm-gpg/RPM-GPG-KEY-centos
+#rpm --import /etc/pki/rpm-gpg/RPM-GPG-KEY-centos
 
 # save a little bit of space at least...
 rm -f /boot/initrd*
@@ -228,7 +233,6 @@ echo 'LIVEOS="yes"' > /etc/mayflower.conf
 echo 'PROBE="no"' >> /etc/mayflower.conf
 echo 'MODULES+="squashfs ext3 ext2 vfat msdos "' >> /etc/mayflower.conf
 echo 'MODULES+="sr_mod sd_mod ide-cd cdrom "' >> /etc/mayflower.conf
-
 ver=`ls /boot/vmlinuz* |head -n 1 |sed -e 's;/boot/vmlinuz-;;'`
 /usr/lib/livecd-creator/mayflower -f /boot/initrd-${ver}.img $ver
 md5sum /boot/initrd-${ver}.img > /boot/initrd.md5
@@ -242,7 +246,7 @@ cp $INSTALL_ROOT/boot/initrd-*.img  $LIVE_ROOT/isolinux/initrd0.img
 #cp $INSTALL_ROOT/boot/vmlinuz-*  $LIVE_ROOT/isolinux/
 
 cp $INSTALL_ROOT/usr/share/doc/*-release-*/GPL $LIVE_ROOT/GPL
-cp $INSTALL_ROOT/usr/share/doc/HTML/readme-live-image/en_US/readme-live-image-en_US.txt $LIVE_ROOT/README
+#cp $INSTALL_ROOT/usr/share/doc/HTML/readme-live-image/en_US/readme-live-image-en_US.txt $LIVE_ROOT/README
 
 # only works on x86, x86_64
 if [ "$(uname -i)" = "i386" -o "$(uname -i)" = "x86_64" ]; then
