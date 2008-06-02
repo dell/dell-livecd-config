@@ -19,6 +19,7 @@ repo --name=addons --baseurl=http://hb.us.dell.com/pub/Distros/centos/5.1/addons
 repo --name=extras --baseurl=http://hb.us.dell.com/pub/Distros/centos/5.1/extras/i386/
 repo --name=plus --baseurl=http://hb.us.dell.com/pub/Distros/centos/5.1/centosplus/i386/
 repo --name=fast --baseurl=http://hb.us.dell.com/pub/Distros/centos/5.1/fasttrack/i386/
+repo --name=omsa --baseurl=http://hb.us.dell.com/pub/yum/dell-repo/hardware/latest/per900/rh50/
 repo --name=local --baseurl=file://##SCRIPT_DIR##/repository/
 
 %packages
@@ -28,7 +29,7 @@ repo --name=local --baseurl=file://##SCRIPT_DIR##/repository/
 kernel
 memtest86+
 livecd-tools
-
+srvadmin-all
 #probably do not need
 #@fonts
 #@admin-tools
