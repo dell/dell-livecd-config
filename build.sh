@@ -25,6 +25,19 @@ import_key() {
     	rpm --import $GPG_KEY
     fi
 }
+get_firmware_packages() {
+	
+	if [-f $SCRIPT_DIR/primary.xml]
+	  then
+		echo "Deleting primary.xml"
+		rm -f $SCRIPT_DIR/primary.xml
+	fi
+	
+        wget $DELL_FIRMWARE_REPO_URL/repodata/primary.xml.gz
+	gunzip primary.xml.gz
+	./extract_rpms.pl primary.xml > firmware_packages_list.ks
+	
+}
 
 rm -rf $SCRIPT_DIR/livecd 
 mkdir -p $SCRIPT_DIR/livecd
@@ -46,11 +59,21 @@ do
 	perl -p -e "s|##$varname##|${!varname}|g;" $SCRIPT_DIR/livecd-config.tmp> $SCRIPT_DIR/livecd-config.ks
 done
 
-rm $SCRIPT_DIR/livecd-config.tmp
+rm $SCRIPT_DIR/livecd-config.tmp  #remove the temporary file
 
 createrepo $SCRIPT_DIR/repository
 import_key
 
+get_firmware_packages
+#remove conflicting packages
+
+for package in  $FIRMWARE_EXCLUDE_PACKAGES
+do
+	cp firmware_packages_list.ks firmware_packages_list.tmp
+      	perl -p -e "s|$package||g;" firmware_packages_list.tmp > firmware_packages_list.ks
+done
+
+rm firmware_packages_list.tmp # remove the temporary
 export OMIIGNORESYSID=1
 livecd-creator --config livecd-config.ks -t $SCRIPT_DIR/livecd --fslabel Dell_Live_CentOS --cache $SCRIPT_DIR/cache/
 

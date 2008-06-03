@@ -1,3 +1,5 @@
+%include firmware_packages_list.ks
+
 lang en_US.UTF-8
 keyboard us
 timezone US/Eastern
@@ -22,7 +24,7 @@ repo --name=fast --baseurl=##CENTOS_FAST_URL##
 
 repo --name=omsa --baseurl=##DELL_HARDWARE_REPO_URL##
 repo --name=software --baseurl=##DELL_SOFTWARE_REPO_URL##
-repor --name=firmware --baseurl=##DELL_FIRMWARE_REPO_URL## 
+repo --name=firmware --baseurl=##DELL_FIRMWARE_REPO_URL## 
 
 #local repository
 repo --name=local --baseurl=file://##SCRIPT_DIR##/repository/
@@ -37,9 +39,21 @@ kernel
 memtest86+
 livecd-tools
 @fonts
+
 #OMSA
 srvadmin-all
 firefox
+
+#software
+firmware-addon-dell
+dell_inventory_collector
+#firmware-extract
+pysmbios
+
+#required by firmware-extract 
+#python-sqlobject
+#python-sqlite2
+
 #probably do not need
 #@admin-tools
 #@hardware-support
@@ -47,7 +61,6 @@ firefox
 # definitely do not need
 #@dial-up
 #@printing
-
 
 # save some space
 -specspo
