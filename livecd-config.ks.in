@@ -13,14 +13,21 @@ services --enabled=NetworkManager --disabled=network,sshd
 #repo --name=updates --baseurl=http://hb.us.dell.com/pub/fedora/linux/updates/9/$basearch/
 
 # Below repos are for Centos5
-repo --name=released --baseurl=http://hb.us.dell.com/pub/Distros/centos/5.1/os/i386/
-repo --name=updates --baseurl=http://hb.us.dell.com/pub/Distros/centos/5.1/updates/i386/
-repo --name=addons --baseurl=http://hb.us.dell.com/pub/Distros/centos/5.1/addons/i386/
-repo --name=extras --baseurl=http://hb.us.dell.com/pub/Distros/centos/5.1/extras/i386/
-repo --name=plus --baseurl=http://hb.us.dell.com/pub/Distros/centos/5.1/centosplus/i386/
-repo --name=fast --baseurl=http://hb.us.dell.com/pub/Distros/centos/5.1/fasttrack/i386/
-repo --name=omsa --baseurl=http://hb.us.dell.com/pub/yum/dell-repo/hardware/latest/per900/rh50/
+repo --name=released --baseurl=##CENTOS_RELEASED_URL##
+repo --name=updates --baseurl=##CENTOS_UPDATES_URL##
+repo --name=addons --baseurl=##CENTOS_ADDONS_URL##
+repo --name=extras --baseurl=##CENTOS_EXTRAS_URL##
+repo --name=plus --baseurl=##CENTOS_PLUS_URL##
+repo --name=fast --baseurl=##CENTOS_FAST_URL##
+
+repo --name=omsa --baseurl=##DELL_HARDWARE_REPO_URL##
+repo --name=software --baseurl=##DELL_SOFTWARE_REPO_URL##
+repor --name=firmware --baseurl=##DELL_FIRMWARE_REPO_URL## 
+
+#local repository
 repo --name=local --baseurl=file://##SCRIPT_DIR##/repository/
+
+
 
 %packages
 @base-x
