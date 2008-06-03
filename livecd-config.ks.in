@@ -173,6 +173,7 @@ chkconfig --level 345 anacron off 2>/dev/null
 chkconfig --level 345 readahead_early off 2>/dev/null
 chkconfig --level 345 readahead_later off 2>/dev/null
 
+
 # Stopgap fix for RH #217966; should be fixed in HAL instead
 touch /media/.hal-mtab
 
@@ -248,10 +249,12 @@ chmod 755 /etc/rc.d/init.d/centos-late-live
 
 # work around for poor key import UI in PackageKit
 #rpm --import /etc/pki/rpm-gpg/RPM-GPG-KEY-centos
-#export OMIIGNORESYSID=1
-#yum -y install srvadmin-all
 
-
+##AUTO LOGIN
+perl  -p -e "s|^\[daemon\]|\[daemon\]\nTimedLoginEnable=true\nTimedLogin=centos\nTimedLoginDelay=0|g" /etc/gdm/custom.conf > /etc/gdm/custom.conf.tmp
+cp /etc/gdm/custom.conf.tmp /etc/gdm/custom.conf
+rm /etc/gdm/custom.conf.tmp
+chmod 644 /etc/gdm/custom.conf
 
 # save a little bit of space at least...
 rm -f /boot/initrd*

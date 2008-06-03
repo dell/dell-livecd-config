@@ -27,7 +27,7 @@ import_key() {
 }
 get_firmware_packages() {
 	
-	if [-f $SCRIPT_DIR/primary.xml]
+	if [ -f $SCRIPT_DIR/primary.xml ]
 	  then
 		echo "Deleting primary.xml"
 		rm -f $SCRIPT_DIR/primary.xml
