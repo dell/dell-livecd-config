@@ -29,9 +29,11 @@ repo --name=local --baseurl=file://##SCRIPT_DIR##/repository/
 kernel
 memtest86+
 livecd-tools
+@fonts
+#OMSA
 srvadmin-all
+firefox
 #probably do not need
-#@fonts
 #@admin-tools
 #@hardware-support
 
@@ -226,6 +228,10 @@ chmod 755 /etc/rc.d/init.d/centos-late-live
 
 # work around for poor key import UI in PackageKit
 #rpm --import /etc/pki/rpm-gpg/RPM-GPG-KEY-centos
+#export OMIIGNORESYSID=1
+#yum -y install srvadmin-all
+
+
 
 # save a little bit of space at least...
 rm -f /boot/initrd*

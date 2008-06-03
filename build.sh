@@ -20,7 +20,7 @@ import_key() {
     fi
 }
 
-rm -rf $SCRIPT_DIR/livecd
+rm -rf $SCRIPT_DIR/livecd 
 mkdir -p $SCRIPT_DIR/livecd
 
 perl -p -e "s|##SCRIPT_DIR##|$SCRIPT_DIR|g;" $SCRIPT_DIR/livecd-config.ks.in > $SCRIPT_DIR/livecd-config.ks
@@ -28,5 +28,6 @@ perl -p -e "s|##SCRIPT_DIR##|$SCRIPT_DIR|g;" $SCRIPT_DIR/livecd-config.ks.in > $
 createrepo $SCRIPT_DIR/repository
 import_key
 
+export OMIIGNORESYSID=1
 livecd-creator --config livecd-config.ks -t $SCRIPT_DIR/livecd --fslabel Dell_Live_CentOS --cache $SCRIPT_DIR/cache/
 
