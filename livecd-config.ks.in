@@ -256,6 +256,14 @@ cp /etc/gdm/custom.conf.tmp /etc/gdm/custom.conf
 rm /etc/gdm/custom.conf.tmp
 chmod 644 /etc/gdm/custom.conf
 
+#list of packages
+
+rm -rf /var/lib/rpm/__*
+/bin/rpm -rebuilddb 
+/bin/rpm -qa| xargs /bin/rpm -qi  > /tmp/packages
+
+
+
 # save a little bit of space at least...
 rm -f /boot/initrd*
 
@@ -271,6 +279,10 @@ md5sum /boot/initrd-${ver}.img > /boot/initrd.md5
 
 
 %post --nochroot
+
+## Get the list of packages installed on the livecd
+mv $INSTALL_ROOT/tmp/packages .
+
 
 cp $INSTALL_ROOT/boot/initrd-*.img  $LIVE_ROOT/isolinux/initrd0.img
 #cp $INSTALL_ROOT/boot/vmlinuz-*  $LIVE_ROOT/isolinux/

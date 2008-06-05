@@ -77,3 +77,34 @@ rm firmware_packages_list.tmp # remove the temporary
 export OMIIGNORESYSID=1
 livecd-creator --config livecd-config.ks -t $SCRIPT_DIR/livecd --fslabel Dell_Live_CentOS --cache $SCRIPT_DIR/cache/
 
+
+#Making a copy of the source rpms
+
+for src_rpm in `cat packages | grep Source |grep -v -i system_bios| grep  -v Firmware | grep -v componentid | cut -d : -f 3 | grep  "src.rpm$" | sort | uniq`
+do
+        for source in \
+		SRC_CENTOS_RELEASED_URL \
+		SRC_CENTOS_UPDATES_URL \
+		SRC_CENTOS_ADDONS_URL \
+		SRC_CENTOS_EXTRAS_URL \
+		SRC_CENTOS_PLUS_URL \
+		SRC_CENTOS_FAST_URL
+	do
+		#echo url= ${!source} and rpm = $src_rpm
+		code=`curl --head ${!source}/$src_rpm 2> /dev/null | head -n 1 | cut -d " " -f2`
+		#echo "code = $code"
+		if [ $code == 200 ]
+		then
+			wget   -P SRPMS  ${!source}/$src_rpm -o logfile
+			break
+			
+		fi
+	done 
+	#echo "package= $src"
+
+done
+
+
+#Removing all the temporary files
+rm -f livecd-config.ks firmware_packages_list.ks packages logfile primary.xml 
+
