@@ -262,7 +262,74 @@ rm -rf /var/lib/rpm/__*
 /bin/rpm -rebuilddb 
 /bin/rpm -qa| xargs /bin/rpm -qi  > /tmp/packages
 
+#Better Look and Feel
+cat > /etc/X11/xinit/Xclients << EOF
+#!/bin/bash
+# Copyright (C) 1999 - 2004 Red Hat, Inc. All rights reserved. This
+# copyrighted material is made available to anyone wishing to use, modify,
+# copy, or redistribute it subject to the terms and conditions of the
+# GNU General Public License version 2.
+# 
+# You should have received a copy of the GNU General Public License
+# along with this program; if not, write to the Free Software
+# Foundation, Inc., 675 Mass Ave, Cambridge, MA 02139, USA.
 
+GSESSION="$(which gnome-session 2>/dev/null)"
+STARTKDE="$(which startkde 2>/dev/null)"
+
+# check to see if the user has a preferred desktop
+PREFERRED=
+if [ -f /etc/sysconfig/desktop ]; then
+    . /etc/sysconfig/desktop
+    if [ "$DESKTOP" = "GNOME" ]; then
+	PREFERRED="$GSESSION"
+    elif [ "$DESKTOP" = "KDE" ]; then
+	PREFERRED="$STARTKDE"
+    fi
+fi
+
+if [ -n "$PREFERRED" ]; then
+    exec "$PREFERRED"
+fi
+
+# now if we can reach here, either no desktop file was present,
+# or the desktop requested is not installed.
+
+if [ -n "$GSESSION" ]; then
+    # by default, we run GNOME.
+    exec "$GSESSION"
+elif [ -n "$STARTKDE" ]; then
+    # if GNOME isn't installed, try KDE.
+    exec "$STARTKDE"
+fi
+
+# Failsafe.
+
+# these files are left sitting around by TheNextLevel.
+rm -f $HOME/Xrootenv.0
+
+# Argh! Nothing good is installed. Fall back to twm
+{
+    # gosh, neither fvwm95 nor fvwm2 is available; 
+    # fall back to failsafe settings
+    [ -x /usr/bin/xsetroot ] && /usr/bin/xsetroot -solid '#222E45'
+
+    if [ -x /usr/bin/xterm ] ; then
+        /usr/bin/xterm -geometry 80x50-50+150 &
+    fi
+    if [ -x /usr/bin/firefox -a -f /usr/share/doc/HTML/index.html ]; then
+	/usr/bin/firefox www.linux.dell.com & 
+    fi
+    if [ -x /usr/sbin/inventory_firmware_gui ]; then
+        su /usr/sbin/inventory_firmware_gui
+    fi
+
+    if [ -x /usr/bin/twm ] ; then
+	exec /usr/bin/twm
+    fi
+}
+
+EOF 
 
 # save a little bit of space at least...
 rm -f /boot/initrd*
@@ -283,6 +350,8 @@ md5sum /boot/initrd-${ver}.img > /boot/initrd.md5
 ## Get the list of packages installed on the livecd
 mv $INSTALL_ROOT/tmp/packages .
 
+#hardlink the firmware files in the live cd
+#/usr/sbin/hardlink -c $INSTALL_ROOT/usr/share/firmware
 
 cp $INSTALL_ROOT/boot/initrd-*.img  $LIVE_ROOT/isolinux/initrd0.img
 #cp $INSTALL_ROOT/boot/vmlinuz-*  $LIVE_ROOT/isolinux/
