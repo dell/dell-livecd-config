@@ -81,7 +81,7 @@ livecd-creator --config livecd-config.ks -t $SCRIPT_DIR/livecd --fslabel Dell_Li
 #Making a copy of the source rpms
 if [ $COPY_SOURCES == 1 ]
 then
-	for src_rpm in `cat packages | grep Source |grep -v -i system_bios| grep  -v Firmware | grep -v componentid | cut -d : -f 3 | grep  "src.rpm$" | sort | uniq`
+	for src_rpm in `cat packages |grep -v -i system_bios| grep  -v Firmware | grep -v componentid | grep  "src.rpm$" | sort | uniq`
 	do
        	 	for source in \
 			SRC_CENTOS_RELEASED_URL \
@@ -103,6 +103,16 @@ then
 	done
 
 fi
-#Removing all the temporary files
-rm -f livecd-config.ks firmware_packages_list.ks packages logfile primary.xml 
 
+#copy the iso to the distribution site
+scp Dell_Live_CentOS.iso  praveen_paladugu@geeko.linuxdev.us.dell.com:/var/ftp/pub/linux.dell.com/srv/www/vhosts/linux.dell.com/html/files/firmware-livecd
+
+scp -r SRPMS praveen_paladugu@geeko.linuxdev.us.dell.com:/var/ftp/pub/linux.dell.com/srv/www/vhosts/linux.dell.com/html/files/firmware-livecd
+
+#SHA1 SUM key 
+sha1sum Dell_Live_CentOS.iso > DELL-RPM-GPG-KEY
+scp DELL-RPM-GPG-KEY praveen_paladugu@geeko.linuxdev.us.dell.com:/var/ftp/pub/linux.dell.com/srv/www/vhosts/linux.dell.com/html/files/firmware-livecd
+
+
+#Removing all the temporary files
+rm -f livecd-config.ks firmware_packages_list.ks packages logfile primary.xml DELL-RPM-GPG-KEY
