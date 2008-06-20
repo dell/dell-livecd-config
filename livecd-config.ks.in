@@ -72,6 +72,7 @@ pysmbios
 -sox
 -hplip
 -hpijs
+-sysreport  #temporary fix
 # smartcards won't really work on the livecd.  
 -coolkey
 -ccid

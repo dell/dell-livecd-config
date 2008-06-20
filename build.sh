@@ -35,7 +35,7 @@ get_firmware_packages() {
 	
         wget $DELL_FIRMWARE_REPO_URL/repodata/primary.xml.gz
 	gunzip primary.xml.gz
-	./extract_rpms.pl primary.xml > firmware_packages_list.ks
+	./extract_rpms.pl primary.xml | sort | uniq > firmware_packages_list.ks
 	
 }
 
