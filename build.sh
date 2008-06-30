@@ -2,8 +2,17 @@
 
 SCRIPT_DIR=$(cd $(dirname $0); pwd)
 GPG_KEY=$SCRIPT_DIR/RPM-GPG-KEY-PGuay.txt
+_LOCK=$SCRIPT_DIR/build.lock
 
 source $SCRIPT_DIR/default.conf
+
+if ! lockfile -2 -r 2 $_LOCK; then
+    echo "Another autobuilder appears to be running."
+    echo "Autobuilder startup not completed. Please stop the other"
+    echo "instance before starting another builder."
+    exit 1
+fi
+trap 'rm -f $_LOCK"' EXIT INT QUIT HUP TERM
 
 if [ "$1" = "--config" -a -e "$2" ]; then
 	source $2
@@ -117,4 +126,4 @@ fi
 sha1sum Dell_Live_CentOS.iso > Dell_Live_CentOS.sha1sum
 
 #Removing all the temporary files
-#rm -f livecd-config.ks firmware_packages_list.ks /home/packages logfile primary.xml DELL-RPM-GPG-KEY livecd-config.ks.tmp
+rm -f livecd-config.ks firmware_packages_list.ks $SCRIPT_DIR/temp/packages logfile primary.xml DELL-RPM-GPG-KEY livecd-config.ks.tmp
