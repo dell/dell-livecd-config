@@ -14,7 +14,10 @@ if ! lockfile -2 -r 2 $_LOCK; then
 fi
 trap 'rm -f $_LOCK"' EXIT INT QUIT HUP TERM
 
-$SCRIPT_DIR/build.sh
+# we assume that we are going to be running this under cron in a non-root account
+# must set up SUDO separately to allow this. Here is an example line for sudoers file:
+# build ALL = NOPASSWD: /home/build/dell-livecd-config/build.sh
+sudo $SCRIPT_DIR/build.sh
 ret=$?
 
 if [ $ret -eq 0 ]; then
