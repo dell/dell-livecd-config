@@ -38,7 +38,6 @@ repo --name=local --baseurl=file://##SCRIPT_DIR##/repository/
 kernel
 memtest86+
 livecd-tools
-@fonts
 
 #OMSA
 srvadmin-all
@@ -63,6 +62,8 @@ pysmbios
 #@printing
 
 # save some space
+#sysreport causes a conflict with sos
+-sysreport
 -specspo
 -esc
 -samba-client
@@ -72,7 +73,6 @@ pysmbios
 -sox
 -hplip
 -hpijs
--sysreport  #temporary fix
 # smartcards won't really work on the livecd.  
 -coolkey
 -ccid
@@ -167,14 +167,6 @@ chown -R centos:centos /home/centos/.config
 
 cat > /home/centos/.Xclients << EOFILE
 #!/bin/bash
-# Copyright (C) 1999 - 2004 Red Hat, Inc. All rights reserved. This
-# copyrighted material is made available to anyone wishing to use, modify,
-# copy, or redistribute it subject to the terms and conditions of the
-# GNU General Public License version 2.
-# 
-# You should have received a copy of the GNU General Public License
-# along with this program; if not, write to the Free Software
-# Foundation, Inc., 675 Mass Ave, Cambridge, MA 02139, USA.
 
 GSESSION="$(which gnome-session 2>/dev/null)"
 STARTKDE="$(which startkde 2>/dev/null)"
@@ -363,8 +355,7 @@ md5sum /boot/initrd-${ver}.img > /boot/initrd.md5
 %post --nochroot
 
 ## Get the list of packages installed on the livecd
-mv $INSTALL_ROOT/tmp/packages .
-
+mv $INSTALL_ROOT/tmp/packages ##TEMP_DIR##/
 #hardlink the firmware files in the live cd
 /usr/sbin/hardlink -c $INSTALL_ROOT/usr/share/firmware
 

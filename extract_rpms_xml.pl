@@ -7,12 +7,10 @@ my $filename = shift ;
 open(XMLFILE,$filename);
 my $tag;
 my $parser;
-print "%packages\n";
 $parser = new XML::Parser(ErrorContext => 2);
 $parser->setHandlers(Start => \&start_handler, Char => \&char_handler, End => \&end_handler);
 $parser->parsefile($filename);
 
-print "%end\n";
 
 sub start_handler()
 {

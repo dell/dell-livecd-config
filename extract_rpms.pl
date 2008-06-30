@@ -7,7 +7,6 @@ open(XMLFILE,$filename);
 
 my $line;
 
-print "%packages\n";
 while(<XMLFILE>)
 {
 	 $line = $_;
@@ -42,4 +41,3 @@ while(<XMLFILE>)
 	}
 }
 
-print "%end\n";
