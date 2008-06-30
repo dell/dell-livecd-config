@@ -95,8 +95,11 @@ export OMIIGNORESYSID=1
 livecd-creator --config livecd-config.ks -t $SCRIPT_DIR/livecd --fslabel Dell_Live_CentOS --cache $SCRIPT_DIR/cache/
 
 
-#Making a copy of the source rpms
+if [-d $SCRIPT_DIR/SRPMS]; then
+	rm -rf $SCRIPT_DIR/SRPMS/*
+fi
 
+#Making a copy of the source rpms to comply with GPL.
 if [ $COPY_SOURCES == 1 ]
 then
 	for src_rpm in `cat $SCRIPT_DIR/temp/packages |grep -v -i system_bios| grep  -v Firmware | grep -v componentid | grep  "src.rpm$" | sort | uniq`
