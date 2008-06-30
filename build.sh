@@ -46,8 +46,9 @@ mkdir -p $SCRIPT_DIR/livecd
 TEMP_DIR=$SCRIPT_DIR/temp
 mkdir -p $TEMP_DIR
 
-perl -p -e "s|##SCRIPT_DIR##|$SCRIPT_DIR|g;" $SCRIPT_DIR/livecd-config.ks.in > $SCRIPT_DIR/livecd-config.ks
-perl -p -e "s|##TEMP_DIR##|$TEMP_DIR|g;" $SCRIPT_DIR/livecd-config.ks.in > $SCRIPT_DIR/livecd-config.ks
+perl -p -e "s|##SCRIPT_DIR##|$SCRIPT_DIR|g;" $SCRIPT_DIR/livecd-config.ks.in > $SCRIPT_DIR/livecd-config.ks.tmp
+perl -p -e "s|##TEMP_DIR##|$TEMP_DIR|g;" $SCRIPT_DIR/livecd-config.ks.tmp > $SCRIPT_DIR/livecd-config.ks
+
 
 for varname in 			\
 	CENTOS_RELEASED_URL	\
@@ -116,4 +117,4 @@ fi
 sha1sum Dell_Live_CentOS.iso > Dell_Live_CentOS.sha1sum
 
 #Removing all the temporary files
-rm -f livecd-config.ks firmware_packages_list.ks /home/packages logfile primary.xml DELL-RPM-GPG-KEY
+#rm -f livecd-config.ks firmware_packages_list.ks /home/packages logfile primary.xml DELL-RPM-GPG-KEY livecd-config.ks.tmp
