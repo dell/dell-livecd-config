@@ -2,14 +2,14 @@
 
 SCRIPT_DIR=$(cd $(dirname $0); pwd)
 GPG_KEY=$SCRIPT_DIR/RPM-GPG-KEY-PGuay.txt
-_LOCK=$SCRIPT_DIR/build.lock
+_LOCK=$SCRIPT_DIR/.build.lock
 
 source $SCRIPT_DIR/default.conf
 
 if ! lockfile -2 -r 2 $_LOCK; then
-    echo "Another autobuilder appears to be running."
-    echo "Autobuilder startup not completed. Please stop the other"
-    echo "instance before starting another builder."
+    echo "Another build appears to be running."
+    echo "Build startup not completed. Please stop the other"
+    echo "instance before starting another build."
     exit 1
 fi
 trap 'rm -f $_LOCK"' EXIT INT QUIT HUP TERM
