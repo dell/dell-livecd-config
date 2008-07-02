@@ -1,8 +1,10 @@
 #!/usr/bin/perl
+#This script extracts all the names of the packages available at the given repoistory. 
+#This script uses the meta-data (primary.xml.gz) files in the repository to extract the packages' names.
+#
 use strict;
 
 my $filename = shift ;
-
 open(XMLFILE,$filename);
 
 my $line;
@@ -14,8 +16,7 @@ while(<XMLFILE>)
 	{
 	   	$line =~ m/<name>([^<]+)<\/name>/;
 		
-		#print "name == $1 ";
-		my  $name = $1;
+		my  $name = $1; #name of the package
 		
 		while (<XMLFILE>)
 		{
@@ -23,14 +24,13 @@ while(<XMLFILE>)
 		 	last if $_ =~ m/<location href=/ ;
 		}
 	 	
-		$line	=~ m/<location href="([^"]+)"\/>/;
-		#print " location= $1 \n";
+		$line	=~ m/<location href="([^"]+)"\/>/; #extract the location to find if the package is a source package or not.
 	        	
 		my $location = $1;
 			
-		if($location !~ m/\.src\.rpm$/)
+		if($location !~ m/\.src\.rpm$/)    #exclude all the src packages
 		{
-			if ($location !~ m/headers/)
+			if ($location !~ m/headers/) # exclude all the header packages
 			{
 				if($location !~ m/-repository/)
 				{		

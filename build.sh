@@ -1,5 +1,5 @@
 #!/bin/sh
-
+#SCRIPT_DIR='/home/build/dell-livecd-config'
 SCRIPT_DIR=$(cd $(dirname $0); pwd)
 GPG_KEY=$SCRIPT_DIR/RPM-GPG-KEY-PGuay.txt
 _LOCK=$SCRIPT_DIR/.build.lock
@@ -12,7 +12,7 @@ if ! lockfile -2 -r 2 $_LOCK; then
     echo "instance before starting another build."
     exit 1
 fi
-trap 'rm -f $_LOCK"' EXIT INT QUIT HUP TERM
+trap 'rm -f "$_LOCK"' EXIT INT QUIT HUP TERM
 
 if [ "$1" = "--config" -a -e "$2" ]; then
 	source $2
@@ -42,11 +42,11 @@ get_firmware_packages() {
 		rm -f $SCRIPT_DIR/primary.xml
 	fi
 	
-        wget $DELL_FIRMWARE_REPO_URL/repodata/primary.xml.gz
-	gunzip primary.xml.gz
-	echo "%packages" > firmware_packages_list.ks
-	./extract_rpms.pl primary.xml | sort| uniq >>  firmware_packages_list.ks
-	echo "%end" >> firmware_packages_list.ks
+        wget -P $SCRIPT_DIR $DELL_FIRMWARE_REPO_URL/repodata/primary.xml.gz
+	gunzip $SCRIPT_DIR/primary.xml.gz
+	echo "%packages" > $SCRIPT_DIR/firmware_packages_list.ks
+	$SCRIPT_DIR/extract_rpms.pl primary.xml | sort| uniq >>  $SCRIPT_DIR/firmware_packages_list.ks
+	echo "%end" >> $SCRIPT_DIR/firmware_packages_list.ks
 	
 }
 
@@ -57,7 +57,6 @@ mkdir -p $TEMP_DIR
 
 perl -p -e "s|##SCRIPT_DIR##|$SCRIPT_DIR|g;" $SCRIPT_DIR/livecd-config.ks.in > $SCRIPT_DIR/livecd-config.ks.tmp
 perl -p -e "s|##TEMP_DIR##|$TEMP_DIR|g;" $SCRIPT_DIR/livecd-config.ks.tmp > $SCRIPT_DIR/livecd-config.ks
-
 
 for varname in 			\
 	CENTOS_RELEASED_URL	\
@@ -84,18 +83,18 @@ get_firmware_packages
 
 for package in  $FIRMWARE_EXCLUDE_PACKAGES
 do
-	cp firmware_packages_list.ks firmware_packages_list.tmp
-      	perl -p -e "s|$package||g;" firmware_packages_list.tmp > firmware_packages_list.ks
+	cp $SCRIPT_DIR/firmware_packages_list.ks $SCRIPT_DIR/firmware_packages_list.tmp
+      	perl -p -e "s|$package||g;" $SCRIPT_DIR/firmware_packages_list.tmp > $SCRIPT_DIR/firmware_packages_list.ks
 done
 
-rm firmware_packages_list.tmp # remove the temporary
+rm $SCRIPT_DIR/firmware_packages_list.tmp # remove the temporary
 mkdir -p $SCRIPT_DIR/cache/yum-cache
 
 export OMIIGNORESYSID=1
 livecd-creator --config livecd-config.ks -t $SCRIPT_DIR/livecd --fslabel Dell_Live_CentOS --cache $SCRIPT_DIR/cache/
 
 
-if [-d $SCRIPT_DIR/SRPMS]; then
+if [ -d $SCRIPT_DIR/SRPMS ]; then
 	rm -rf $SCRIPT_DIR/SRPMS/*
 fi
 
@@ -115,7 +114,7 @@ then
 			code=`curl --head ${!source}/$src_rpm 2> /dev/null | head -n 1 | cut -d " " -f2`
 			if [ $code == 200 ]
 			then
-				wget   -P SRPMS  ${!source}/$src_rpm -o logfile
+				wget   -P $SCRIPT_DIR/SRPMS  ${!source}/$src_rpm -o logfile
 				break
 				
 			fi
@@ -126,7 +125,7 @@ then
 fi
 
 #SHA1 SUM key 
-sha1sum Dell_Live_CentOS.iso > Dell_Live_CentOS.sha1sum
+sha1sum $SCRIPT_DIR/Dell_Live_CentOS.iso > $SCRIPT_DIR/Dell_Live_CentOS.sha1sum
 
 #Removing all the temporary files
-rm -f livecd-config.ks firmware_packages_list.ks $SCRIPT_DIR/temp/packages logfile primary.xml DELL-RPM-GPG-KEY livecd-config.ks.tmp
+rm -f $SCRIPT_DIR/livecd-config.ks $SCRIPT_DIR/firmware_packages_list.ks $SCRIPT_DIR/temp/packages $SCRIPT_DIR/logfile $SCRIPT_DIR/primary.xml $SCRIPT_DIR/DELL-RPM-GPG-KEY $SCRIPT_DIR/livecd-config.ks.tmp

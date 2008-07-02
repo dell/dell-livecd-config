@@ -2,6 +2,7 @@
 use strict;
 use XML::Parser;
 
+# This program uses the XML::Parser module of Perl to extract the names of the packages from the given repository.
 my $filename = shift ;
 
 open(XMLFILE,$filename);
@@ -16,16 +17,13 @@ sub start_handler()
 {
   my $parse = shift;
      $tag = shift;
-  #print "\nstart : $tag"	
 }
 
 sub char_handler()
 {
 	
   my ($parse,$data)= @_;
-#	print "char $data\t ";
 	if($tag eq "name") { print "$data";}
-	#$tag = "none";
 } 
 
 sub end_handler()

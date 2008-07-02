@@ -10,9 +10,6 @@ xconfig --startxonboot
 part / --size 4096
 services --enabled=NetworkManager --disabled=network,sshd
 
-#Below are for Fedora
-#repo --name=released --baseurl=http://hb.us.dell.com/pub/fedora/linux/releases/9/Everything/$basearch/os/
-#repo --name=updates --baseurl=http://hb.us.dell.com/pub/fedora/linux/updates/9/$basearch/
 
 # Below repos are for Centos5
 repo --name=released --baseurl=##CENTOS_RELEASED_URL##
@@ -62,7 +59,7 @@ pysmbios
 #@printing
 
 # save some space
-#sysreport causes a conflict with sos
+#sysreport conflicting with sos
 -sysreport
 -specspo
 -esc
@@ -215,7 +212,7 @@ rm -f $HOME/Xrootenv.0
        sudo /usr/bin/srvadmin-services.sh start &
     fi	
     if [ -x /usr/bin/firefox ]; then
-	/usr/bin/firefox  https://localhost:1311  &
+	/usr/bin/firefox  https://localhost:1311  &  #starting firefox to interact with OMSA
     fi
     if [ -x /usr/sbin/inventory_firmware_gui ]; then
 	sudo /usr/sbin/inventory_firmware_gui &
@@ -226,6 +223,7 @@ rm -f $HOME/Xrootenv.0
 }
 EOFILE
 chmod 755 /home/centos/.Xclients
+
 #Forcing the RandomPlacement of New Windows in twm
 cp /etc/X11/twm/system.twmrc /home/centos/.twmrc
 echo "RandomPlacement" >> /home/centos/.twmrc
@@ -297,7 +295,7 @@ fi
 
 EOF
 
-#disabling the selinux from the live-cd
+#disabling the selinux in the live-cd
 mv /etc/selinux/config /etc/selinux/config.bk
 cat /etc/selinux/config.bk | sed -e "s/SELINUX=enforcing/SELINUX=disabled/g" > /etc/selinux/config 
 
@@ -330,10 +328,13 @@ rm /etc/gdm/custom.conf.tmp
 chmod 644 /etc/gdm/custom.conf
 
 #list of packages
-#Below two lines are only to fix a problem with rpm, might not be required while using a higher version
+#Below two lines are only to fix a problem with rpm package, might not be required while using a higher version
 rm -rf /var/lib/rpm/__*
 /bin/rpm -rebuilddb
-#Command to extract all the source rpms.
+
+#Command to extract all the source rpm names.
+# This is used to build the SOURCE CD so that we can be GPL compliant.
+# this file is moved outside the chroot in the %post --nochroot, below.
 /bin/rpm -qa  --qf '%{SOURCERPM}\n' > /tmp/packages
 
 
@@ -355,14 +356,18 @@ md5sum /boot/initrd-${ver}.img > /boot/initrd.md5
 %post --nochroot
 
 ## Get the list of packages installed on the livecd
+# This is used to build the SOURCE CD so that we can be GPL compliant.
+# this file is generated in the %post, above.
 mv $INSTALL_ROOT/tmp/packages ##TEMP_DIR##/
-#hardlink the firmware files in the live cd
+
+#hardlink the firmware files in the live cd. This is because there are *many* 
+# files in /usr/share/firmware that are identical, and if we dont do this,
+# we dont fit onto a CD.
 /usr/sbin/hardlink -c $INSTALL_ROOT/usr/share/firmware
 
 cp $INSTALL_ROOT/boot/initrd-*.img  $LIVE_ROOT/isolinux/initrd0.img
 
 cp $INSTALL_ROOT/usr/share/doc/*-release-*/GPL $LIVE_ROOT/GPL
-#cp $INSTALL_ROOT/usr/share/doc/HTML/readme-live-image/en_US/readme-live-image-en_US.txt $LIVE_ROOT/README
 
 # only works on x86, x86_64
 if [ "$(uname -i)" = "i386" -o "$(uname -i)" = "x86_64" ]; then
