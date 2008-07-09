@@ -1,5 +1,4 @@
 #!/bin/sh
-#SCRIPT_DIR='/home/build/dell-livecd-config'
 SCRIPT_DIR=$(cd $(dirname $0); pwd)
 GPG_KEY=$SCRIPT_DIR/RPM-GPG-KEY-PGuay.txt
 _LOCK=$SCRIPT_DIR/.build.lock
