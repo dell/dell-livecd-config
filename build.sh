@@ -1,4 +1,5 @@
 #!/bin/sh
+
 SCRIPT_DIR=$(cd $(dirname $0); pwd)
 GPG_KEY=$SCRIPT_DIR/RPM-GPG-KEY-PGuay.txt
 _LOCK=$SCRIPT_DIR/.build.lock
@@ -33,6 +34,8 @@ import_key() {
     	rpm --import $GPG_KEY
     fi
 }
+
+#function to extract all the name of all the firmware packages available in firmware repo
 get_firmware_packages() {
 	
 	if [ -f $SCRIPT_DIR/primary.xml ]
@@ -46,85 +49,101 @@ get_firmware_packages() {
 	echo "%packages" > $SCRIPT_DIR/firmware_packages_list.ks
 	$SCRIPT_DIR/extract_rpms.pl primary.xml | sort| uniq >>  $SCRIPT_DIR/firmware_packages_list.ks
 	echo "%end" >> $SCRIPT_DIR/firmware_packages_list.ks
+	#final list of available firmware updates is available in firmware_packages_list.ks file.
+	#This file is included in livecd-config.ks file, to add the firmware packages to the final list of packages to be
+	#installed on the livecd.
 	
 }
 
-rm -rf $SCRIPT_DIR/livecd 
-mkdir -p $SCRIPT_DIR/livecd
+#remove any left overs from previous runs
+rm -rf $SCRIPT_DIR/livecd/* 
 TEMP_DIR=$SCRIPT_DIR/temp
-mkdir -p $TEMP_DIR
+if [ ! -d $TEMP_DIR ] 
+then
+	mkdir -p $TEMP_DIR
+fi
 
-perl -p -e "s|##SCRIPT_DIR##|$SCRIPT_DIR|g;" $SCRIPT_DIR/livecd-config.ks.in > $SCRIPT_DIR/livecd-config.ks.tmp
-perl -p -e "s|##TEMP_DIR##|$TEMP_DIR|g;" $SCRIPT_DIR/livecd-config.ks.tmp > $SCRIPT_DIR/livecd-config.ks
+cp $SCRIPT_DIR/livecd-config.ks.in $SCRIPT_DIR/livecd-config.ks
+
 
 for varname in 			\
 	CENTOS_RELEASED_URL	\
 	CENTOS_UPDATES_URL	\
-	CENTOS_ADDONS_URL	\
-	CENTOS_EXTRAS_URL	\
-	CENTOS_PLUS_URL		\
-	CENTOS_FAST_URL		\
 	DELL_HARDWARE_REPO_URL	\
 	DELL_SOFTWARE_REPO_URL	\
-	DELL_FIRMWARE_REPO_URL
+	DELL_FIRMWARE_REPO_URL	\
+	SRC_CENTOS_RELEASED_URL	\
+	SRC_CENTOS_UPDATES_URL	\
+	NAMESERVER		\
+	SCRIPT_DIR	\
+	TEMP_DIR
 do
 	cp $SCRIPT_DIR/livecd-config.ks $SCRIPT_DIR/livecd-config.tmp
 	perl -p -e "s|##$varname##|${!varname}|g;" $SCRIPT_DIR/livecd-config.tmp> $SCRIPT_DIR/livecd-config.ks
 done
 
-rm $SCRIPT_DIR/livecd-config.tmp  #remove the temporary file
-
+#create a local repository
 createrepo $SCRIPT_DIR/repository
+
 import_key
 
 get_firmware_packages
-#remove conflicting packages
 
+#remove conflicting packages
+# this can be eleminated after the conflicts are resolved
 for package in  $FIRMWARE_EXCLUDE_PACKAGES
 do
 	cp $SCRIPT_DIR/firmware_packages_list.ks $SCRIPT_DIR/firmware_packages_list.tmp
       	perl -p -e "s|$package||g;" $SCRIPT_DIR/firmware_packages_list.tmp > $SCRIPT_DIR/firmware_packages_list.ks
 done
 
-rm $SCRIPT_DIR/firmware_packages_list.tmp # remove the temporary
+#directory to cache rpms- to be used by livecd-creator to install to $INSTALL_ROOT
 mkdir -p $SCRIPT_DIR/cache/yum-cache
 
-export OMIIGNORESYSID=1
-livecd-creator --config livecd-config.ks -t $SCRIPT_DIR/livecd --fslabel Dell_Live_CentOS --cache $SCRIPT_DIR/cache/
+export OMIIGNORESYSID=1 #enviromnent setting for OMSA installation.
+/usr/bin/livecd-creator --config $SCRIPT_DIR/livecd-config.ks -t $SCRIPT_DIR/livecd --fslabel Dell_Live_CentOS --cache $SCRIPT_DIR/cache/
 
-
-if [ -d $SCRIPT_DIR/SRPMS ]; then
-	rm -rf $SCRIPT_DIR/SRPMS/*
-fi
 
 #Making a copy of the source rpms to comply with GPL.
-if [ $COPY_SOURCES == 1 ]
-then
-	for src_rpm in `cat $SCRIPT_DIR/temp/packages |grep -v -i system_bios| grep  -v Firmware | grep -v componentid | grep  "src.rpm$" | sort | uniq`
-	do
-       	 	for source in \
-			SRC_CENTOS_RELEASED_URL \
-			SRC_CENTOS_UPDATES_URL \
-			SRC_CENTOS_ADDONS_URL \
-			SRC_CENTOS_EXTRAS_URL \
-			SRC_CENTOS_PLUS_URL \
-			SRC_CENTOS_FAST_URL
-		do
-			code=`curl --head ${!source}/$src_rpm 2> /dev/null | head -n 1 | cut -d " " -f2`
-			if [ $code == 200 ]
-			then
-				wget   -P $SCRIPT_DIR/SRPMS  ${!source}/$src_rpm -o logfile
-				break
+#if [ $COPY_SOURCES == 1 ]
+#then
+#	for src_rpm in `cat $SCRIPT_DIR/temp/packages |grep -v -i system_bios| grep  -v Firmware | grep -v componentid | grep  "src.rpm$" | sort | uniq`
+#	do
+ #      	 	for source in \
+#			SRC_CENTOS_RELEASED_URL \
+#			SRC_CENTOS_UPDATES_URL \
+#			SRC_CENTOS_ADDONS_URL \
+#			SRC_CENTOS_EXTRAS_URL \
+#			SRC_CENTOS_PLUS_URL \
+#			SRC_CENTOS_FAST_URL
+#		do
+#			code=`curl --head ${!source}/$src_rpm 2> /dev/null | head -n 1 | cut -d " " -f2`
+#			if [ $code == 200 ]
+#			then
+#				wget   -P $SCRIPT_DIR/SRPMS  ${!source}/$src_rpm -o logfile
+#				break
 				
-			fi
-		done 
+#			fi
+#		done 
+#
+#	done
 
+#fi
+
+
+#temp/wget contains all the urls of the source rpms of packages installed in livecd.
+if [ -f $SCRIPT_DIR/temp/wget ]
+then
+	rm -rf $SCRIPT_DIR/SRPMS/* #delete the previous copy of the sources.
+	for url in `cat $SCRIPT_DIR/temp/wget| grep http|sort|uniq`
+	do
+		wget -P $SCRIPT_DIR/SRPMS $url -o logfile
 	done
-
 fi
+
 
 #SHA1 SUM key 
 sha1sum $SCRIPT_DIR/Dell_Live_CentOS.iso > $SCRIPT_DIR/Dell_Live_CentOS.sha1sum
 
 #Removing all the temporary files
-rm -f $SCRIPT_DIR/livecd-config.ks $SCRIPT_DIR/firmware_packages_list.ks $SCRIPT_DIR/temp/packages $SCRIPT_DIR/logfile $SCRIPT_DIR/primary.xml $SCRIPT_DIR/DELL-RPM-GPG-KEY $SCRIPT_DIR/livecd-config.ks.tmp
+rm -f $SCRIPT_DIR/livecd-config.ks $SCRIPT_DIR/firmware_packages_list.ks $SCRIPT_DIR/temp/wget1 $SCRIPT_DIR/logfile $SCRIPT_DIR/primary.xml $SCRIPT_DIR/DELL-RPM-GPG-KEY $SCRIPT_DIR/livecd-config.ks.tmp $SCRIPT_DIR/livecd-config.tmp $SCRIPT_DIR/firmware_packages_list.tmp

@@ -7,8 +7,8 @@ set -e
 SCRIPT_DIR=$(cd $(dirname $0); pwd)
 cd $SCRIPT_DIR
 
-rm -f build.log
-exec > build.log 2>&1
+rm -f $SCRIPT_DIR/build.log
+exec > $SCRIPT_DIR/build.log 2>&1
 
 _LOCK=$SCRIPT_DIR/.cron-build.lock
 if ! lockfile -2 -r 2 $_LOCK; then
@@ -25,10 +25,8 @@ ret=$?
 
 if [ $ret -eq 0 ]; then
 	umask 002
-	/usr/bin/mkisofs -r -o Dell_Live_CentOS_SRPMS.iso $SCRIPT_DIR/SRPMS
-	rsync -avz Dell_Live_CentOS* /var/ftp/pub/linux.dell.com/srv/www/vhosts/linux.dell.com/html/files/firmware-livecd/
-	rm -rf $SCRIPT_DIR/SRPMS
-	rm -f Dell_Live_CentOS*
+	/usr/bin/mkisofs -r -o $SCRIPT_DIR/Dell_Live_CentOS_SRPMS.iso $SCRIPT_DIR/SRPMS
+	rsync -avz $SCRIPT_DIR/Dell_Live_CentOS* /var/ftp/pub/linux.dell.com/srv/www/vhosts/linux.dell.com/html/files/firmware-livecd/
 	echo "BUILD OF LIVECD WAS SUCCESSFUL" # SUCCESS!
 	
 else
