@@ -146,4 +146,4 @@ fi
 sha1sum $SCRIPT_DIR/Dell_Live_CentOS.iso > $SCRIPT_DIR/Dell_Live_CentOS.sha1sum
 
 #Removing all the temporary files
-rm -f $SCRIPT_DIR/livecd-config.ks $SCRIPT_DIR/firmware_packages_list.ks $SCRIPT_DIR/temp/wget1 $SCRIPT_DIR/logfile $SCRIPT_DIR/primary.xml $SCRIPT_DIR/DELL-RPM-GPG-KEY $SCRIPT_DIR/livecd-config.ks.tmp $SCRIPT_DIR/livecd-config.tmp $SCRIPT_DIR/firmware_packages_list.tmp
+rm -f $SCRIPT_DIR/livecd-config.ks $SCRIPT_DIR/firmware_packages_list.ks $SCRIPT_DIR/temp/wget $SCRIPT_DIR/logfile $SCRIPT_DIR/primary.xml $SCRIPT_DIR/DELL-RPM-GPG-KEY $SCRIPT_DIR/livecd-config.ks.tmp $SCRIPT_DIR/livecd-config.tmp $SCRIPT_DIR/firmware_packages_list.tmp
