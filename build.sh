@@ -56,7 +56,8 @@ get_firmware_packages() {
 }
 
 #remove any left overs from previous runs
-rm -rf $SCRIPT_DIR/livecd/* 
+rm -rf $SCRIPT_DIR/livecd
+mkdir -p $SCRIPT_DIR/livecd
 TEMP_DIR=$SCRIPT_DIR/temp
 if [ ! -d $TEMP_DIR ] 
 then
